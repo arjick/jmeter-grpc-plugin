@@ -1,0 +1,135 @@
+syntax = "proto3";
+
+package proto;
+
+import "annotations.proto";
+import "types.proto";
+import "google/protobuf/any.proto";
+
+option go_package = "google.golang.org/genproto/googleapis/api/annotations;annotations";
+option java_multiple_files = true;
+option java_package = "proto";
+
+message UpdateTargetingRequest {
+    int64 criteria_id = 1;
+    oneof targeting_request {
+        TargetingCriteriaItems platform_targeting = 2;
+        TargetingCriteriaItems isp_targeting = 3;
+        DaypartTargeting daypart_targeting = 4;
+        ItemTargeting content_targeting = 5;
+        ItemTargeting audience_targeting = 6;
+        TargetingSetGroup custom_targeting = 7;
+        ContentPackageTargeting content_package_targeting = 8;
+        GEOTargeting geo_targeting = 9;
+    }
+}
+
+message ListTargetingRequest {
+    string criteria_ids = 1;
+    string criteria_types = 2;
+}
+
+message ListTargetingResponse {
+    message Targetings {
+        TargetingCriteriaItems platform_targeting = 1;
+        TargetingCriteriaItems isp_targeting = 2;
+        DaypartTargeting daypart_targeting = 3;
+        ItemTargeting content_targeting = 4;
+        ItemTargeting audience_targeting = 5;
+        TargetingSetGroup custom_targeting = 6;
+        ContentPackageTargeting content_package_targeting = 7;
+        GEOTargeting geo_targeting = 8;
+    }
+    map<int64, Targetings> data = 1;
+}
+
+message UpdateTargetingResponse {
+    oneof targeting_response {
+        TargetingCriteriaItems platform_targeting = 1;
+        TargetingCriteriaItems isp_targeting = 2;
+        DaypartTargeting daypart_targeting = 3;
+        ItemTargeting content_targeting = 4;
+        ItemTargeting audience_targeting = 5;
+        TargetingSetGroup custom_targeting = 6;
+        ContentPackageTargeting content_package_targeting = 7;
+        GEOTargeting geo_targeting = 8;
+    }
+}
+
+message TargetingCriteriaItem {
+    int64 id = 1;
+    string name = 2;
+    string category = 3;
+    string criteria_type = 4;
+}
+
+message GEOTargeting {
+    repeated TargetingCriteriaItem include = 1;
+    repeated TargetingCriteriaItem exclude = 2;
+}
+
+message DaypartTargeting {
+    int64 timezone_id = 1;
+    repeated CustomDaypart custom_dayparts = 2;
+}
+
+message CustomDaypart {
+    int64 start_day = 1;
+    int64 end_day = 2;
+    repeated int64 days = 3;
+    string start_time = 4;
+    string end_time = 5;
+    string repeats = 6;
+}
+
+message TargetingSetGroup {
+    repeated TargetingSet sets = 1;
+    repeated string out_set_relation = 2;
+}
+
+message TargetingSet {
+    repeated TargetingCriteriaItem child_items = 1;
+    string in_set_relation = 2;
+    string name = 3;
+}
+
+message TargetingNode {
+    string relation = 1;
+    repeated TargetingNode child_criterias = 2;
+    string name = 3;
+    repeated TargetingCriteriaItem child_items = 4;
+}
+
+message ItemTargeting {
+    repeated TargetingCriteriaItem include = 1;
+    TargetingSetGroup advanced_include = 2;
+    repeated TargetingCriteriaItem exclude = 3;
+    TargetingNode treed_advanced_include = 4; //todo settle down whether need it?
+    string set_name = 5;
+}
+
+message ContentPackageTargeting {
+    repeated TargetingCriteriaItem include = 1;
+    string description_with_id = 2;
+    string description = 3;
+    string set_name = 4;
+}
+
+message TargetingCriteriaItems {
+    repeated TargetingCriteriaItem include = 1;
+}
+
+service TargetAdaptor {
+    rpc ListTargetings (ListTargetingRequest) returns (ListTargetingResponse) {
+        option (google.api.http) = {
+            get: "/targeting/targetings"
+        };
+    }
+
+    rpc UpdateTargeting (UpdateTargetingRequest) returns (UpdateTargetingResponse) {
+        option (google.api.http) = {
+            put: "/targeting/targetings/{criteria_id}"
+            body: "*"
+        };
+    }
+}

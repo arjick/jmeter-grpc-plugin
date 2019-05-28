@@ -1,0 +1,28 @@
+syntax="proto3";
+
+package auth;
+
+option java_multiple_files = true;
+
+// The Customer service definition.
+service Auth {
+    rpc Login(LoginParams) returns (ResultResponse) {}
+}
+
+//空请求体
+message LoginParams {
+    int64 requestId =1;
+    string username = 2;
+    string password = 3;
+}
+
+
+//通用返回体定义
+message ResultResponse {
+  int64 requestId = 1;
+  bool success = 2;
+  string message = 3;
+  int32 userId = 4;
+  string token = 5;
+}
+
